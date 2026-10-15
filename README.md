@@ -60,6 +60,7 @@ This compares the old build (`v1.wasm`) against the new build (`v2.wasm`) and re
   - [Printing JSON schemas and completion](#printing-json-schemas-and-completion)
   - [Symlinked inputs](#symlinked-inputs)
   - [Fetching inputs over HTTPS](#fetching-inputs-over-https)
+  - [Parsed-metadata cache](#parsed-metadata-cache)
   - [Validating against historical versions (lineage tracking)](#validating-against-historical-versions-lineage-tracking)
   - [Suppressing known breaking changes](#suppressing-known-breaking-changes)
   - [Output format](#output-format)
@@ -719,6 +720,34 @@ sent to a redirect target.
 
 See [Remote HTTPS Inputs](docs/remote-https-inputs.md) for the digest
 format, caching, and error messages.
+
+### Parsed-metadata cache
+
+The tool caches parsed WASM metadata (decoded XDR, interface hashes, and
+normalized specs) keyed by the WASM content hash, shared across every input
+source. See [Metadata Cache](docs/metadata_cache.md) for what is cached and how
+entries are invalidated.
+
+#### Clearing the cache
+
+`--clear-metadata-cache` deletes every entry in the parsed-metadata cache and
+exits. It does not run a comparison, so no WASM inputs are needed:
+
+```bash
+soroban-upgrade-safeguard --clear-metadata-cache
+```
+
+```
+Cleared parsed-metadata cache at '/tmp/soroban-upgrade-safeguard/metadata-cache'
+```
+
+`--metadata-cache-dir <DIR>` selects which directory is cleared; without it, the
+default cache directory is used. `--quiet` suppresses the confirmation line.
+
+```bash
+soroban-upgrade-safeguard --clear-metadata-cache \
+  --metadata-cache-dir .cache/safeguard
+```
 
 ### Validating against historical versions (lineage tracking)
 
