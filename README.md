@@ -762,6 +762,39 @@ soroban-upgrade-safeguard ./wasm/v1.wasm ./wasm/v2.wasm --no-metadata-cache
 It affects only the run it is passed to; existing cache entries are left in
 place. Use [`--clear-metadata-cache`](#clearing-the-cache) to delete them.
 
+#### Statistics and inspection
+
+Two flags report on the cache. They differ in whether a comparison runs:
+
+| Flag | Runs a comparison? | What it does |
+|------|--------------------|--------------|
+| `--metadata-cache-stats` | Yes | Prints hit, miss, and invalidation counts to stderr after the run. |
+| `--inspect-metadata-cache` | No | Lists all entries currently in the parsed-metadata cache and exits. |
+
+`--metadata-cache-stats` is added to a normal run, so it needs the usual inputs.
+`--inspect-metadata-cache` exits without analyzing anything, so no WASM inputs
+are needed. Both write to stderr, which keeps a `--format json` report on stdout
+clean, and both honor `--metadata-cache-dir`.
+
+```bash
+# Report on the cache after a normal comparison
+soroban-upgrade-safeguard ./wasm/v1.wasm ./wasm/v2.wasm --metadata-cache-stats
+
+# Audit the cache without running anything
+soroban-upgrade-safeguard --inspect-metadata-cache
+```
+
+`--inspect-metadata-cache` prints one line per entry, showing its schema version,
+tool version, truncated content and interface hashes, and size:
+
+```
+metadata-cache: 3 entries in '/tmp/soroban-upgrade-safeguard/metadata-cache' (18432 bytes total)
+  [schema=1  tool=0.1.0]  content=a1b2c3d4…  hash=cafebabe…  4096 bytes
+  ...
+```
+
+See [Metadata Cache](docs/metadata_cache.md#cache-statistics) for more.
+
 #### Clearing the cache
 
 `--clear-metadata-cache` deletes every entry in the parsed-metadata cache and
