@@ -728,6 +728,40 @@ normalized specs) keyed by the WASM content hash, shared across every input
 source. See [Metadata Cache](docs/metadata_cache.md) for what is cached and how
 entries are invalidated.
 
+#### Choosing the cache directory
+
+`--metadata-cache-dir <DIR>` sets the directory used to cache parsed WASM
+metadata. The directory is resolved in this order:
+
+1. `--metadata-cache-dir <DIR>`
+2. The `SOROBAN_SAFEGUARD_METADATA_CACHE` environment variable, if set
+3. `$TMPDIR/soroban-upgrade-safeguard/metadata-cache/`
+
+An explicit flag always wins over the environment variable. Local files,
+`https://`, `oci://`, RPC, batch manifests, and watch mode all share the one
+resolved directory.
+
+```bash
+# Use a project-local cache directory for this run
+soroban-upgrade-safeguard ./wasm/v1.wasm ./wasm/v2.wasm \
+  --metadata-cache-dir .cache/safeguard
+
+# Or set it once for every run in the environment
+export SOROBAN_SAFEGUARD_METADATA_CACHE=.cache/safeguard
+```
+
+#### Bypassing the cache
+
+`--no-metadata-cache` neither reads from nor writes to the parsed-metadata cache
+for this run, so the WASM is always re-decoded from scratch:
+
+```bash
+soroban-upgrade-safeguard ./wasm/v1.wasm ./wasm/v2.wasm --no-metadata-cache
+```
+
+It affects only the run it is passed to; existing cache entries are left in
+place. Use [`--clear-metadata-cache`](#clearing-the-cache) to delete them.
+
 #### Clearing the cache
 
 `--clear-metadata-cache` deletes every entry in the parsed-metadata cache and
